@@ -5,9 +5,9 @@ const SignUpPage = () => {
 	return (
 		<div className='min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
 			<div className='sm:mx-auto sm:w-full sm:max-w-md'>
-				<img className='mx-auto h-36 w-auto' src='/logo.svg' alt='LinkedIn' />
+				<img className='mx-auto h-20 w-auto mb-9 rounded-2xl' src='/logo.jpeg' alt='Pro-Connect' />
 				<h2 className='text-center text-3xl font-extrabold text-gray-900'>
-					Make the most of your professional life
+				Build Your Network, Advance Your Career. 
 				</h2>
 			</div>
 			<div className='mt-8 sm:mx-auto sm:w-full sm:max-w-md shadow-md'>
@@ -20,7 +20,7 @@ const SignUpPage = () => {
 								<div className='w-full border-t border-gray-300'></div>
 							</div>
 							<div className='relative flex justify-center text-sm'>
-								<span className='px-2 bg-white text-gray-500'>Already on LinkedIn?</span>
+								<span className='px-2 bg-white text-gray-500'>Already on Pro-Connect?</span>
 							</div>
 						</div>
 						<div className='mt-6'>
