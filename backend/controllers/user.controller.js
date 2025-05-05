@@ -70,6 +70,18 @@ export const updateProfile = async (req, res) => {
 			updatedData.bannerImg = result.secure_url;
 		}
 
+		if (req.body.resume) {
+			const result = await cloudinary.uploader.upload(req.body.resume, {
+				resource_type: "raw",
+				folder: "resumes"
+			});
+			updatedData.resume = {
+				url: result.secure_url,
+				filename: req.body.resumeName,
+				uploadDate: new Date()
+			};
+		}
+
 		const user = await User.findByIdAndUpdate(req.user._id, { $set: updatedData }, { new: true }).select(
 			"-password"
 		);
