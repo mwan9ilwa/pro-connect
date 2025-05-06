@@ -55,7 +55,7 @@ export const updateProfile = async (req, res) => {
 		const updatedData = {};
 
 		for (const field of allowedFields) {
-			if (req.body[field]) {
+			if (req.body[field] !== undefined) {
 				updatedData[field] = req.body[field];
 			}
 		}
@@ -70,16 +70,23 @@ export const updateProfile = async (req, res) => {
 			updatedData.bannerImg = result.secure_url;
 		}
 
-		if (req.body.resume) {
-			const result = await cloudinary.uploader.upload(req.body.resume, {
-				resource_type: "raw",
-				folder: "resumes"
-			});
-			updatedData.resume = {
-				url: result.secure_url,
-				filename: req.body.resumeName,
-				uploadDate: new Date()
-			};
+		// Handle resume upload
+		if (req.body.resume !== undefined) {
+			if (req.body.resume === null) {
+				// If resume is null, remove the resume field
+				updatedData.resume = null;
+			} else if (req.body.resume) {
+				// Upload new resume to Cloudinary
+				const result = await cloudinary.uploader.upload(req.body.resume, {
+					resource_type: "raw",
+					folder: "resumes"
+				});
+				updatedData.resume = {
+					url: result.secure_url,
+					filename: req.body.resumeName || 'resume.pdf',
+					uploadDate: new Date()
+				};
+			}
 		}
 
 		const user = await User.findByIdAndUpdate(req.user._id, { $set: updatedData }, { new: true }).select(
