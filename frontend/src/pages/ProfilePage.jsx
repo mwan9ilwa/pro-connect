@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
+import { Box } from '@chakra-ui/react';
 
 import ProfileHeader from "../components/ProfileHeader";
 import AboutSection from "../components/AboutSection";
@@ -9,6 +10,7 @@ import EducationSection from "../components/EducationSection";
 import SkillsSection from "../components/SkillsSection";
 import ResumeSection from "../components/ResumeSection";
 import toast from "react-hot-toast";
+import MessageButton from '../components/MessageButton';
 
 const ProfilePage = () => {
 	const { username } = useParams();

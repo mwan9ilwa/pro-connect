@@ -4,6 +4,7 @@ import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
 
 import { Camera, Clock, MapPin, UserCheck, UserPlus, X } from "lucide-react";
+import MessageButton from './MessageButton';
 
 const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 	const [isEditing, setIsEditing] = useState(false);
@@ -80,10 +81,10 @@ const ProfileHeader = ({ userData, onSave, isOwnProfile }) => {
 			case "connected":
 				return (
 					<div className='flex gap-2 justify-center'>
-						<div className={`${baseClass} bg-green-500 hover:bg-green-600`}>
-							<UserCheck size={20} className='mr-2' />
-							Connected
-						</div>
+						<MessageButton 
+							recipientId={userData._id}
+							recipientName={userData.name}
+						/>
 						<button
 							className={`${baseClass} bg-red-500 hover:bg-red-600 text-sm`}
 							onClick={() => removeConnection(userData._id)}
