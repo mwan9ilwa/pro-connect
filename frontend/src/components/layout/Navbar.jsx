@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
 import { Link } from "react-router-dom";
-import { Bell, Home, LogOut, User, Users } from "lucide-react";
+import { Bell, Home, LogOut, User, Users, MessageCircle } from "lucide-react";
 
 const Navbar = () => {
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
@@ -19,6 +19,15 @@ const Navbar = () => {
 		enabled: !!authUser,
 	});
 
+	const { data: conversations } = useQuery({
+		queryKey: ["conversations"],
+		queryFn: async () => {
+			const res = await axiosInstance.get("/messages/conversations");
+			return res.data;
+		},
+		enabled: !!authUser,
+	});
+
 	const { mutate: logout } = useMutation({
 		mutationFn: () => axiosInstance.post("/auth/logout"),
 		onSuccess: () => {
@@ -28,6 +37,10 @@ const Navbar = () => {
 
 	const unreadNotificationCount = notifications?.data.filter((notif) => !notif.read).length;
 	const unreadConnectionRequestsCount = connectionRequests?.data?.length;
+	const unreadMessagesCount = conversations && Array.isArray(conversations) 
+		? conversations.filter(convo => convo.unreadCount > 0)
+			.reduce((total, convo) => total + convo.unreadCount, 0)
+		: 0;
 
 	return (
 		<nav className='bg-secondary shadow-md sticky top-0 z-10'>
@@ -54,6 +67,18 @@ const Navbar = () => {
 										rounded-full size-3 md:size-4 flex items-center justify-center'
 										>
 											{unreadConnectionRequestsCount}
+										</span>
+									)}
+								</Link>
+								<Link to='/messages' className='text-neutral flex flex-col items-center relative'>
+									<MessageCircle size={20} />
+									<span className='text-xs hidden md:block'>Messages</span>
+									{unreadMessagesCount > 0 && (
+										<span
+											className='absolute -top-1 -right-1 md:right-4 bg-blue-500 text-white text-xs 
+										rounded-full size-3 md:size-4 flex items-center justify-center'
+										>
+											{unreadMessagesCount}
 										</span>
 									)}
 								</Link>
