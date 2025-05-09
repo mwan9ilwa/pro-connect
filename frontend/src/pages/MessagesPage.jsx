@@ -1,11 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import MessageConversation from "../components/MessageConversation";
 import { formatDistanceToNow } from "date-fns";
+import { Edit, PlusCircle, Search, X } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 const MessagesPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
+  const [showNewMessageModal, setShowNewMessageModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const location = useLocation();
 
   // Fetch all conversations
   const { data: conversations, isLoading } = useQuery({
@@ -16,6 +21,32 @@ const MessagesPage = () => {
     },
   });
 
+  // Fetch connections for new message modal
+  const { data: connections } = useQuery({
+    queryKey: ["connections"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/connections");
+      return res.data;
+    },
+    enabled: showNewMessageModal,
+  });
+
+  // Check if we're coming from a profile page with state
+  useEffect(() => {
+    if (location.state?.userId) {
+      setSelectedUser({
+        id: location.state.userId,
+        name: location.state.userName,
+        profilePicture: location.state.profilePicture
+      });
+    }
+  }, [location.state]);
+
+  // Filter connections based on search term
+  const filteredConnections = connections?.filter(connection => 
+    connection.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Messages</h1>
@@ -23,8 +54,15 @@ const MessagesPage = () => {
       <div className="flex flex-col md:flex-row gap-4 bg-white rounded-lg shadow-sm border">
         {/* Conversations list */}
         <div className="w-full md:w-1/3 border-r">
-          <div className="p-4 border-b">
+          <div className="p-4 border-b flex justify-between items-center">
             <h2 className="font-semibold text-lg">Conversations</h2>
+            <button 
+              onClick={() => setShowNewMessageModal(true)}
+              className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition"
+              title="New Message"
+            >
+              <Edit size={18} />
+            </button>
           </div>
           
           <div className="overflow-y-auto" style={{ maxHeight: "70vh" }}>
@@ -83,6 +121,75 @@ const MessagesPage = () => {
           />
         </div>
       </div>
+
+      {/* New Message Modal */}
+      {showNewMessageModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">New Message</h3>
+              <button 
+                onClick={() => setShowNewMessageModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="relative mb-4">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search size={18} className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search connections..."
+                className="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-1 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="max-h-60 overflow-y-auto">
+              {!connections ? (
+                <div className="p-4 text-center">Loading connections...</div>
+              ) : connections.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  No connections found. Connect with people to start messaging.
+                </div>
+              ) : filteredConnections.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  No connections match your search.
+                </div>
+              ) : (
+                filteredConnections.map(connection => (
+                  <div
+                    key={connection._id}
+                    onClick={() => {
+                      setSelectedUser({
+                        id: connection._id,
+                        name: connection.name,
+                        profilePicture: connection.profilePicture
+                      });
+                      setShowNewMessageModal(false);
+                    }}
+                    className="p-3 border-b flex items-center cursor-pointer hover:bg-gray-50"
+                  >
+                    <img
+                      src={connection.profilePicture || "/avatar.png"}
+                      alt={connection.name}
+                      className="w-10 h-10 rounded-full object-cover mr-3"
+                    />
+                    <div>
+                      <h4 className="font-medium">{connection.name}</h4>
+                      <p className="text-sm text-gray-600">{connection.headline}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
