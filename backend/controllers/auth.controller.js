@@ -41,8 +41,8 @@ export const signup = async (req, res) => {
 		res.cookie("jwt-linkedin", token, {
 			httpOnly: true, // prevent XSS attack
 			maxAge: 3 * 24 * 60 * 60 * 1000,
-			sameSite: "strict", // prevent CSRF attacks,
-			secure: process.env.NODE_ENV === "production", // prevents man-in-the-middle attacks
+			sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", // Allow cross-site cookies in production
+			secure: process.env.NODE_ENV === "production", // Required when sameSite is 'none'
 		});
 
 		res.status(201).json({ message: "User registered successfully" });
@@ -81,8 +81,8 @@ export const login = async (req, res) => {
 		await res.cookie("jwt-linkedin", token, {
 			httpOnly: true,
 			maxAge: 3 * 24 * 60 * 60 * 1000,
-			sameSite: "strict",
-			secure: process.env.NODE_ENV === "production",
+			sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", // Allow cross-site cookies in production
+			secure: process.env.NODE_ENV === "production", // Required when sameSite is 'none'
 		});
 
 		res.json({ message: "Logged in successfully" });
@@ -93,7 +93,11 @@ export const login = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-	res.clearCookie("jwt-linkedin");
+	res.clearCookie("jwt-linkedin", {
+		httpOnly: true,
+		sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+		secure: process.env.NODE_ENV === "production"
+	});
 	res.json({ message: "Logged out successfully" });
 };
 
